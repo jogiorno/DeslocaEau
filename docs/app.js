@@ -12,8 +12,13 @@ L.control.layers({ 'OSM (escuro)': osm, 'Esri cinza escuro': esri }, null, { pos
 let tileErrors = 0;
 osm.on('tileerror', () => { if (++tileErrors === 6 && map.hasLayer(osm)) { map.removeLayer(osm); esri.addTo(map); } });
 const tangle = L.layerGroup().addTo(map);
-// cores vibrantes para o emaranhado (sobre o mapa escuro); sobreposições clareiam via mix-blend-mode
-const NEON = { pe: '#39ff6a', bike: '#00e5ff', onibus: '#ffe600', integrado: '#d46bff', carro: '#ff3b5c', app: '#ff8a00' };
+// Tons de vermelho: cada trajeto recebe um matiz/luminosidade próprio (estável, derivado do id).
+// Sobreposições clareiam via mix-blend-mode, reforçando o emaranhado.
+const redShade = seed => {
+  let h = 0; for (const c of String(seed)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const hue = (350 + (h % 30)) % 360, light = 42 + ((h >> 5) % 24), sat = 85 + ((h >> 11) % 16);
+  return `hsl(${hue},${sat}%,${light}%)`;
+};
 L.circleMarker([UFF.lat, UFF.lng], { radius: 9, color: '#fff', weight: 2, fillColor: '#ff3d71', fillOpacity: 1 })
   .bindTooltip(UFF.name, { permanent: false }).addTo(map);
 
@@ -25,7 +30,7 @@ for (const [k, m] of Object.entries(MODES)) f.mode.add(new Option(m.label, k));
 DB.list().then(es => {
   $('#n').textContent = es.length;
   for (const e of es) for (const leg of e.legs)
-    L.polyline(leg, { color: NEON[e.mode] || '#fff', weight: 2, opacity: 0.6, interactive: false }).addTo(tangle);
+    L.polyline(leg, { color: redShade(e.id), weight: 2, opacity: 0.65, interactive: false }).addTo(tangle);
 }).catch(e => msg(e.message));
 
 let home = null, work = null, workDone = false, markers = [];
@@ -83,7 +88,7 @@ f.onsubmit = async ev => {
     const body = { home: H, work: W, semester: +f.semester.value, mode: f.mode.value, internHours: +f.internHours.value,
       realMin: f.realMin.value ? +f.realMin.value : null, distKm: +km.toFixed(2), legs };
     await DB.add(body);
-    legs.forEach(l => L.polyline(l, { color: NEON[body.mode], weight: 4, opacity: 1 }).addTo(tangle));
+    legs.forEach(l => L.polyline(l, { color: redShade(Math.random()), weight: 4, opacity: 1 }).addTo(tangle));
     $('#n').textContent = +$('#n').textContent + 1;
     msg(`Enviado! ${km.toFixed(1)} km, ~${Model.oneWayMin(body)} min por trecho de ida. Com a carga do seu período, sobram ~${Model.week(body, Model.DEFAULTS).sleepAvail.toFixed(1)} h de sono por noite. Veja o dashboard.`);
     f.hidden = true; home = work = null; workDone = false; markers.forEach(m => m.remove()); markers = []; refresh();
