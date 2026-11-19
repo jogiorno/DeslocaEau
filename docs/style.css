@@ -1,0 +1,12 @@
+:root{--bg:#fff;--panel:#fff;--line:#e2e4e8;--fg:#14171c;--mute:#5d6672;--acc:#d6001c}
+/* página do mapa: painéis escuros sobre o mapa escuro */
+body.map{--bg:#0e1116;--panel:#171b22;--line:#2a313c;--fg:#e8ecf1;--mute:#8d98a8;--acc:#ffc857}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.7 'Geist Mono',ui-monospace,Consolas,monospace}
+h1,h2,h3,nav b,nav a,.kpi b,.stat b{font-family:Manrope,system-ui,sans-serif;font-weight:700}
+nav{display:flex;gap:36px;align-items:center;padding:14px 40px;border-bottom:1px solid #e2e4e8;background:#fff;color:#14171c;--acc:#d6001c;--mute:#5d6672}
+nav img{height:60px}nav b{font-size:24px;letter-spacing:.05em}nav a{font-size:19px;color:var(--mute);text-decoration:none}nav a.on{color:var(--acc)}nav .sp{flex:1}
+nav small{font-size:16px;color:var(--mute)}
+@media(max-width:700px){nav{flex-wrap:wrap;gap:10px}nav small{display:none}nav b{font-size:20px}}
+button,select,input{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 14px}
+button{cursor:pointer}button.pri{background:var(--acc);color:#111;border-color:var(--acc);font-weight:600}button:disabled{opacity:.45;cursor:default}
+label{display:block;font-size:13px;color:var(--mute);margin:18px 0 6px}
