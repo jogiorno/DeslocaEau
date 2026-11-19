@@ -4,12 +4,12 @@ window.Model = (() => {
   const UFF = { lat: -22.90464, lng: -43.13083, name: 'Escola de Arquitetura e Urbanismo – UFF (Praia Vermelha)' };
 
   const MODES = {
-    pe:        { label: 'A pé',                     kmh: 4.8, waitMin: 0,  color: '#7ddc8b' },
-    bike:      { label: 'Bicicleta',                kmh: 14,  waitMin: 3,  color: '#5fd4e6' },
-    onibus:    { label: 'Ônibus',                   kmh: 13,  waitMin: 10, color: '#ffc857' },
-    integrado: { label: 'Barca / metrô / trem + integração', kmh: 16, waitMin: 15, color: '#c792ea' },
-    carro:     { label: 'Carro / moto',             kmh: 22,  waitMin: 6,  color: '#ff7a7a' },
-    app:       { label: 'App / carona',             kmh: 22,  waitMin: 8,  color: '#ff9f5a' },
+    pe:        { label: 'A pé',                     kmh: 5,   waitMin: 0,  color: '#7ddc8b' },
+    bike:      { label: 'Bicicleta',                kmh: 15,  waitMin: 2,  color: '#5fd4e6' },
+    onibus:    { label: 'Ônibus',                   kmh: 18,  waitMin: 7, color: '#ffc857' },
+    integrado: { label: 'Barca / metrô / trem + integração', kmh: 24, waitMin: 10, color: '#c792ea' },
+    carro:     { label: 'Carro / moto',             kmh: 30,  waitMin: 5,  color: '#ff7a7a' },
+    app:       { label: 'App / carona',             kmh: 28,  waitMin: 5,  color: '#ff9f5a' },
   };
 
   // Fluxograma curricular UFF Arquitetura e Urbanismo (GradeCurricularR25): carga horária obrigatória por período.
