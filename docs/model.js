@@ -7,7 +7,7 @@ window.Model = (() => {
     pe:        { label: 'A pé',                     kmh: 5,   waitMin: 0,  color: '#7ddc8b' },
     bike:      { label: 'Bicicleta',                kmh: 15,  waitMin: 2,  color: '#5fd4e6' },
     onibus:    { label: 'Ônibus',                   kmh: 18,  waitMin: 7, color: '#ffc857' },
-    integrado: { label: 'Barca / metrô / trem + integração', kmh: 24, waitMin: 10, color: '#c792ea' },
+    integrado: { label: 'Barca / metrô / trem (integrado)', kmh: 24, waitMin: 10, color: '#c792ea' },
     carro:     { label: 'Carro / moto',             kmh: 30,  waitMin: 5,  color: '#ff7a7a' },
     app:       { label: 'App / carona',             kmh: 28,  waitMin: 5,  color: '#ff9f5a' },
   };
@@ -25,7 +25,17 @@ window.Model = (() => {
     freeMin: 10,           // h/semana de lazer/vida social que se quer preservar
   };
 
-  const oneWayMin = e => e.realMin ?? Math.round(e.distKm / MODES[e.mode].kmh * 60 + MODES[e.mode].waitMin);
+  // Barcas Praça XV (Rio) ↔ Arariboia (Niterói). Lado "R" = oeste da baía (Rio); "N" = Niterói/leste.
+  const FERRY = { rio: [-22.8978, -43.1742], nit: [-22.8945, -43.1250] };
+  const FERRY_MIN = 20; // minutos por travessia
+  const side = p => p[1] < -43.155 ? 'R' : 'N';
+  // Nº de travessias da baía no sentido de ida (casa → trabalho → UFF), a partir só dos pontos.
+  const crossings = e => {
+    const pts = [e.home, ...(e.work ? [e.work] : []), [UFF.lat, UFF.lng]];
+    return pts.slice(1).filter((p, i) => side(p) !== side(pts[i])).length;
+  };
+  const oneWayMin = e => e.realMin ?? Math.round(e.distKm / MODES[e.mode].kmh * 60 + MODES[e.mode].waitMin
+    + (e.mode === 'integrado' ? crossings(e) * FERRY_MIN : 0));
 
   function week(e, a) {
     const commute = oneWayMin(e) * 2 * a.campusDays / 60;
@@ -44,5 +54,5 @@ window.Model = (() => {
     return out.map(([a, b]) => [+a.toFixed(4), +b.toFixed(4)]);
   }
 
-  return { UFF, MODES, DEFAULTS, oneWayMin, week, simplify };
+  return { UFF, FERRY, FERRY_MIN, side, crossings, MODES, DEFAULTS, oneWayMin, week, simplify };
 })();

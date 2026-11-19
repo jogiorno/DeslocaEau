@@ -44,11 +44,27 @@ function refresh() {
   f.hidden = !(home && workDone);
   f.internHours.disabled = !work; if (!work) f.internHours.value = 0;
 }
-function setPoint(ll) {
-  if (!home) { home = ll; pin(ll, '#5fd4e6'); }
-  else if (!workDone) { work = ll; workDone = true; pin(ll, '#ffc857'); }
-  else return;
-  refresh();
+// Valida o clique: o ponto precisa estar perto de uma via (rejeita mar, baías e oceano) e é ajustado à via mais próxima.
+const MAX_FROM_ROAD_M = 100;
+async function snap(ll) {
+  const r = await fetch(`https://router.project-osrm.org/nearest/v1/driving/${ll[1]},${ll[0]}?number=1`);
+  const j = await r.json(), w = j.waypoints && j.waypoints[0];
+  if (j.code !== 'Ok' || !w) throw new Error('não foi possível validar o ponto');
+  return { dist: /^Ponte Rio-Niter/i.test(w.name || '') ? Math.max(w.distance, 1e4 * (w.distance > 40)) : w.distance, ll: [w.location[1], w.location[0]] };
+}
+let checking = false;
+async function setPoint(raw) {
+  if (checking || (home && workDone)) return;
+  checking = true; msg('Validando ponto…');
+  try {
+    const { dist, ll } = await snap(raw);
+    if (dist > MAX_FROM_ROAD_M) { msg('Esse ponto está no mar, em baía ou longe de qualquer rua. Marque em terra firme.'); return; }
+    msg();
+    if (!home) { home = ll; pin(ll, '#5fd4e6'); }
+    else if (!workDone) { work = ll; workDone = true; pin(ll, '#ffc857'); }
+    refresh();
+  } catch (e) { msg('Erro: ' + e.message); }
+  finally { checking = false; }
 }
 map.on('click', e => setPoint([e.latlng.lat, e.latlng.lng]));
 $('#skipWork').onclick = () => { workDone = true; refresh(); };
@@ -79,12 +95,21 @@ async function route(a, b) {
 }
 const round = p => p.map(v => +v.toFixed(4));
 
+// Modo "barca": se o trecho cruza a Baía de Guanabara, vai por terra até o terminal, atravessa em linha reta e segue por terra.
+async function routeLeg(a, b, mode) {
+  const sa = Model.side(a), sb = Model.side(b);
+  if (mode !== 'integrado' || sa === sb) return route(a, b);
+  const [t1, t2] = sa === 'R' ? [Model.FERRY.rio, Model.FERRY.nit] : [Model.FERRY.nit, Model.FERRY.rio];
+  const A = await route(a, t1), B = await route(t2, b);
+  return { line: [...A.line, t1, t2, ...B.line], km: A.km + B.km }; // km só por terra; a travessia entra no tempo (Model.FERRY_MIN)
+}
+
 f.onsubmit = async ev => {
   ev.preventDefault(); $('#send').disabled = true; msg('Calculando rota…');
   try {
     const H = round(home), W = work && round(work), U = [UFF.lat, UFF.lng];
     const legs = [], parts = W ? [[H, W], [W, U]] : [[H, U]]; let km = 0;
-    for (const [a, b] of parts) { const r = await route(a, b); legs.push(r.line); km += r.km; }
+    for (const [a, b] of parts) { const r = await routeLeg(a, b, f.mode.value); legs.push(r.line); km += r.km; }
     const body = { home: H, work: W, semester: +f.semester.value, mode: f.mode.value, internHours: +f.internHours.value,
       realMin: f.realMin.value ? +f.realMin.value : null, distKm: +km.toFixed(2), legs };
     await DB.add(body);
