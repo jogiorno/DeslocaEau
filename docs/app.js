@@ -7,7 +7,7 @@ const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
 const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
   { attribution: 'Tiles © Esri', maxZoom: 16, opacity: 0.7 });
 osm.addTo(map);
-L.control.layers({ 'OSM (escuro)': osm, 'Esri cinza escuro': esri }, null, { position: 'bottomleft' }).addTo(map);
+L.control.layers({ 'OSM (escuro)': osm, 'Esri cinza escuro': esri }, null, { position: matchMedia('(max-width:720px)').matches ? 'topright' : 'bottomleft' }).addTo(map);
 // se o OSM falhar repetidamente, troca sozinho para Esri
 let tileErrors = 0;
 osm.on('tileerror', () => { if (++tileErrors === 6 && map.hasLayer(osm)) { map.removeLayer(osm); esri.addTo(map); } });
@@ -22,6 +22,7 @@ const redShade = seed => {
 L.circleMarker([UFF.lat, UFF.lng], { radius: 9, color: '#fff', weight: 2, fillColor: '#ff3d71', fillOpacity: 1 })
   .bindTooltip(UFF.name, { permanent: false }).addTo(map);
 
+$('#toggle').onclick = () => $('#panel').classList.toggle('collapsed');
 const msg = t => $('#msg').textContent = t || '';
 const f = $('#form');
 for (let i = 1; i <= 10; i++) f.semester.add(new Option(i + 'º período', i));

@@ -5,7 +5,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-html,body{height:100%}body{display:flex;flex-direction:column}
+html,body{height:100%}body{display:flex;flex-direction:column;height:100vh;height:100dvh}
 #wrap{flex:1;position:relative;min-height:0}#map{position:absolute;inset:0;background:#0b0d11}
 #panel{position:absolute;z-index:1000;top:20px;left:20px;width:360px;max-width:calc(100% - 40px);max-height:calc(100% - 40px);overflow:auto;
  background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px 26px;box-shadow:0 6px 24px #0006}
@@ -15,14 +15,26 @@ html,body{height:100%}body{display:flex;flex-direction:column}
 .stat{position:absolute;z-index:1000;bottom:24px;right:24px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 20px;font-size:13px}
 .stat b{font-size:20px;color:var(--acc)}
 #msg{min-height:18px;font-size:13px;color:var(--acc)}
+.hd{display:flex;align-items:center;justify-content:space-between;gap:12px}.hd h2{margin:0 0 10px}
+#toggle{display:none;min-height:0;padding:4px 12px}
 .leaflet-container{font-family:inherit}
+@media (max-width:720px){
+  #panel{top:auto;left:0;right:0;bottom:0;width:100%;max-width:none;max-height:58%;border-radius:18px 18px 0 0;border-width:1px 0 0;padding:16px 18px 22px;box-shadow:0 -6px 24px #0006}
+  #panel.collapsed>*:not(.hd){display:none}
+  #panel.collapsed .hd h2{margin:0}
+  #toggle{display:block}#panel.collapsed #toggle{transform:rotate(180deg)}
+  #panel h2{font-size:17px}
+  .row{flex-wrap:wrap}.row>*{min-width:130px}
+  .stat{top:12px;bottom:auto;right:12px;padding:8px 12px}
+  .leaflet-top.leaflet-right{top:56px}
+}
 .leaflet-overlay-pane canvas{mix-blend-mode:screen}
 .dark-tiles{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.75) saturate(.25)}
 </style></head><body class="map">
 <nav><img src="logo.png" alt=""><b>DESLOCA EAU</b><a class="on" href="index.html">Mapa</a><a href="dashboard.html">Dashboard</a><span class="sp"></span><small>Arquitetura e Urbanismo · UFF Praia Vermelha</small></nav>
 <div id="wrap"><div id="map"></div>
 <div id="panel">
-  <h2>Desenhe o seu trajeto</h2>
+  <div class="hd"><h2>Desenhe o seu trajeto</h2><button id="toggle" type="button" aria-label="Recolher ou expandir painel">▾</button></div>
   <p>Cada linha é o caminho de um estudante até a UFF. Juntas, formam o emaranhado.</p>
   <div class="step"><span class="dot" style="background:#5fd4e6"></span><span id="s1">1. Clique no mapa: <b>moradia</b></span></div>
   <div class="step"><span class="dot" style="background:#ffc857"></span><span id="s2">2. Trabalho/estágio (opcional)</span></div>

@@ -10,6 +10,8 @@ let entries = [], charts = {};
 const CATS = [['sleep', 'Sono', '#6c7ae0'], ['essentials', 'Atividades essenciais', '#8d98a8'], ['class', 'Aulas', '#ffc857'],
   ['intern', 'Estágio', '#ff9f5a'], ['study', 'Estudo extraclasse', '#c792ea'], ['commute', 'Deslocamento', '#ff5c7a'], ['free', 'Tempo livre', '#5fd4e6']];
 
+const small = () => innerWidth < 720;
+Chart.defaults.aspectRatio = small() ? 1.1 : 2;
 function mk(id, cfg) {
   charts[id]?.destroy();
   Chart.defaults.font.family = "'Geist Mono', monospace"; Chart.defaults.color = css('--mute'); Chart.defaults.borderColor = css('--line');
@@ -65,7 +67,7 @@ function render() {
 
   const ms = Object.keys(MODES);
   mk('#c4', { type: 'doughnut', data: { labels: ms.map(k => MODES[k].label), datasets: [{ data: ms.map(k => entries.filter(e => e.mode === k).length), backgroundColor: ms.map(k => MODES[k].color), borderWidth: 0 }] },
-    options: { plugins: { legend: { position: 'right' } } } });
+    options: { plugins: { legend: { position: small() ? 'bottom' : 'right' } } } });
 }
 
 function buildAssump() {
