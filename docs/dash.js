@@ -25,6 +25,7 @@ function render() {
     [n ? fmt(avg(rows.map(r => r.w.sleepAvail))) + ' h' : '–', 'sono possível por noite (média)'],
     [n ? fmt(100 * rows.filter(r => r.w.sleepAvail < 6).length / n, 0) + '%' : '–', 'podem dormir menos de 6 h por noite'],
     [n ? fmt(100 * rows.filter(r => r.w.sleepAvail < 4).length / n, 0) + '%' : '–', 'podem dormir menos de 4 h por noite'],
+    [n ? fmt(100 * rows.filter(r => r.e.internHours > 0).length / n, 0) + '%' : '–', 'estagiam ou trabalham (todos os períodos)'],
     [n, 'trajetos registrados'],
     [fmt(avg(rows.map(r => r.mins)), 0) + ' min', 'tempo médio de ida'],
     [fmt(avg(entries.map(e => e.distKm))) + ' km', 'distância média de ida'],
@@ -37,7 +38,7 @@ function render() {
   const fixed = { sleep: A.sleepPerDay * 7, essentials: A.essentialsPerDay * 7, study: A.studyExtra };
   mk('#c1', { type: 'bar', data: { labels: byTerm.map((_, i) => (i + 1) + 'º'),
     datasets: CATS.map(([k, l, c]) => ({ label: l, backgroundColor: c,
-      data: byTerm.map((g, i) => g.length ? avg(g.map(r => r.w[k])) : (k === 'class' ? A.classByTerm[i] : fixed[k] ?? 0)) })) },
+      data: byTerm.map((g, i) => g.length ? avg(g.map(r => r.w[k])) : (k === 'class' ? A.classByTerm[i] : k === 'intern' ? avg(rows.map(r => r.w.intern)) : fixed[k] ?? 0)) })) },
     options: { scales: { x: { stacked: true, title: { display: true, text: 'Período' } }, y: { stacked: true, max: 168, title: { display: true, text: 'horas/semana' } } },
       plugins: { legend: { position: 'bottom' } } } });
 
@@ -47,6 +48,10 @@ function render() {
     { label: 'pior caso', data: byTerm.map(g => g.length ? +Math.min(...g.map(r => r.w.sleepAvail)).toFixed(1) : null), backgroundColor: '#ffc857' },
     { type: 'line', label: 'recomendado (8 h)', data: byTerm.map(() => 8), borderColor: '#7ddc8b', borderDash: [6, 4], pointRadius: 0 }] },
     options: { plugins: { legend: { position: 'bottom' } }, scales: { y: { title: { display: true, text: 'horas por noite' } } } } });
+
+  mk('#c6', { type: 'bar', data: { labels: byTerm.map((_, i) => (i + 1) + 'º'), datasets: [
+    { label: '% que estagia', data: byTerm.map(g => g.length ? +(100 * g.filter(r => r.e.internHours > 0).length / g.length).toFixed(0) : null), backgroundColor: '#ff9f5a' }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { max: 100, title: { display: true, text: '% dos estudantes do período' } } } } });
 
   const bins = Array.from({ length: 9 }, (_, i) => i * 15), lab = bins.map((b, i) => i === 8 ? '120+' : `${b}–${b + 14}`);
   const cnt = bins.map(() => 0); rows.forEach(r => cnt[Math.min(8, Math.floor(r.mins / 15))]++);

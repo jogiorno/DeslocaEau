@@ -16,6 +16,7 @@ window.Model = (() => {
   // Total obrigatório 3.825 h (+90 eletivas, +225 optativas, +160 AC = 4.300 h; não distribuídas por período).
   const TERM_HOURS = [450, 435, 465, 450, 450, 390, 405, 390, 210, 180];
   const WEEKS_PER_TERM = 15; // premissa: semanas letivas por período
+  const SUPERVISED_H = 120; // TGA00023 – Estágio Supervisionado (9º período)
   const DEFAULTS = {
     classByTerm: TERM_HOURS.map(h => +(h / WEEKS_PER_TERM).toFixed(1)), // h/semana
     sleepPerDay: 7,        // h de sono por dia
@@ -39,7 +40,10 @@ window.Model = (() => {
 
   function week(e, a) {
     const commute = oneWayMin(e) * 2 * a.campusDays / 60;
-    const cls = a.classByTerm[e.semester - 1];
+    let cls = a.classByTerm[e.semester - 1];
+    // O estágio supervisionado obrigatório (120 h, 9º período) já está nas horas do período.
+    // Quem estagia de fato (20–30 h/sem) o cumpre com esse estágio: não contar duas vezes.
+    if (e.semester === 9 && e.internHours > 0) cls = Math.max(0, cls - SUPERVISED_H / WEEKS_PER_TERM);
     const sleep = a.sleepPerDay * 7, ess = a.essentialsPerDay * 7;
     const used = commute + cls + e.internHours + sleep + ess + a.studyExtra;
     const sleepAvail = (168 - commute - cls - e.internHours - ess - a.studyExtra - a.freeMin) / 7; // h/noite
