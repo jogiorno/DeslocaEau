@@ -2,7 +2,9 @@
 window.DB = (() => {
   const C = window.CONFIG || {};
   const ok = !!(C.SUPABASE_URL && C.SUPABASE_ANON_KEY);
-  const H = { apikey: C.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + C.SUPABASE_ANON_KEY };
+  // Chaves novas (sb_publishable_...) não são JWT: só o cabeçalho apikey; chaves antigas (eyJ...) também aceitam Bearer.
+  const H = { apikey: C.SUPABASE_ANON_KEY };
+  if (/^eyJ/.test(C.SUPABASE_ANON_KEY || '')) H.Authorization = 'Bearer ' + C.SUPABASE_ANON_KEY;
   const url = p => C.SUPABASE_URL.replace(/\/$/, '') + '/rest/v1/entries' + p;
   const fromRow = r => ({ id: r.id, home: r.home, work: r.work, semester: r.semester, mode: r.mode,
     internHours: r.intern_hours, realMin: r.real_min, distKm: +r.dist_km, legs: r.legs || [] });
